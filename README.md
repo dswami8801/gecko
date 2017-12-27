@@ -1,0 +1,1 @@
+A Http protocol based web server to serve static contents.
