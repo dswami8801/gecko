@@ -4,7 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import org.apache.log4j.Logger;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.api.Server;
 import com.esphere.gecko.entity.BeanNotValidException;
@@ -13,7 +20,7 @@ import com.esphere.gecko.loader.ContextLoader;
 
 public class HttpServer implements Server {
 
-	private static Logger LOGGER = Logger.getLogger(HttpServer.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(HttpServer.class);
 
 	private boolean isRunning = false;
 
@@ -24,7 +31,7 @@ public class HttpServer implements Server {
 	}
 
 	public void start(ServerConfig config) {
-		LOGGER.info("Server start Initiated");
+		LOGGER.info("Starting server with config: {}",config.getPort());
 		isRunning = true;
 		doStart(config);
 
@@ -45,7 +52,6 @@ public class HttpServer implements Server {
 			LOGGER.debug("Server Socket created");
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -57,10 +63,8 @@ public class HttpServer implements Server {
 				LOGGER.info("Server handler " + delegator.getClass());
 				delegator.delegate(socket);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (MappingNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -75,12 +79,46 @@ public class HttpServer implements Server {
 
 	public static void main(String[] args) {
 		ServerConfig config = new ServerConfig();
-		config.setPort(9999);
-		RequestDelegator delegator = new RequestDelegator(10);
-		ContextLoader.readContext();
-		HadlerMapping.getMappings();
-		new HttpServer(delegator).start(config);
+		Options options = new Options();
+		options.addOption("p", true, "server binding port");
+		options.addOption("d", true, "Deploymemnt working directory");
 
+		CommandLineParser parser = new BasicParser();
+
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse(options, args);
+
+			if (cmd.hasOption("p")) {
+				config.setPort(Integer.parseInt(cmd.getOptionValue("p")));
+			} else {
+				LOGGER.info("MIssing port , option -d");
+				help(options);
+			}
+
+			if (cmd.hasOption("d")) {
+				config.setWorkingDirectory(cmd.getOptionValue("d"));
+			} else {
+				LOGGER.info("MIssing working directory , option -d");
+				help(options);
+			}
+
+			RequestDelegator delegator = new RequestDelegator(10);
+			ContextLoader contextLoader = new ContextLoader(config.getWorkingDirectory());
+			contextLoader.readContext();
+
+			new HttpServer(delegator).start(config);
+
+		} catch (ParseException e) {
+			LOGGER.error("Failed to parse comand line properties", e);
+			help(options);
+		}
+	}
+
+	private static void help(Options options) {
+		HelpFormatter formater = new HelpFormatter();
+		formater.printHelp("Main", options);
+		System.exit(0);
 	}
 
 }

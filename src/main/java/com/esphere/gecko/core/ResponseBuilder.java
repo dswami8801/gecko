@@ -6,14 +6,15 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.api.Builder;
 import com.esphere.gecko.api.Response;
 
 public class ResponseBuilder implements Builder {
 
-	private static Logger LOGGER = Logger.getLogger(HttpServer.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(HttpServer.class);
 
 	@SuppressWarnings("unchecked")
 	ThreadLocal<SimpleDateFormat> local = new ThreadLocal() {

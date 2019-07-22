@@ -24,4 +24,9 @@ public class Context {
 		this.meta = meta;
 	}
 
+	@Override
+	public String toString() {
+		return "Context [path=" + path + ", meta=" + meta + "]";
+	}
+
 }

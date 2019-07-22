@@ -6,6 +6,8 @@ public class ServerConfig {
 
 	private String host;
 
+	private String workingDirectory;
+
 	public Integer getPort() {
 		return port;
 	}
@@ -20,6 +22,19 @@ public class ServerConfig {
 
 	public void setHost(String host) {
 		this.host = host;
+	}
+
+	public String getWorkingDirectory() {
+		return workingDirectory;
+	}
+
+	public void setWorkingDirectory(String workingDirectory) {
+		this.workingDirectory = workingDirectory;
+	}
+
+	@Override
+	public String toString() {
+		return "[port=" + port + ", host=" + host + ", workingDirectory=" + workingDirectory + "]";
 	}
 
 }

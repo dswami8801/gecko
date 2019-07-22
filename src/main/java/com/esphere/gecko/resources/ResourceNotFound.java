@@ -1,6 +1,8 @@
 package com.esphere.gecko.resources;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.annotation.Endpoint;
 import com.esphere.gecko.constant.RequestMethod;
@@ -9,9 +11,9 @@ import com.esphere.gecko.core.HttpResponse;
 import com.esphere.gecko.entity.Resource;
 
 @Endpoint(value = "/404", method = RequestMethod.GET, produces = "text/html")
-public class NotFoundResource implements Resource {
+public class ResourceNotFound implements Resource {
 
-	private static Logger LOGGER = Logger.getLogger(ExecutorResource.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(GreetingResource.class);
 
 	@Override
 	public void doServe(HttpRequest httpRequest, HttpResponse httpResponse) {
@@ -20,7 +22,7 @@ public class NotFoundResource implements Resource {
 		httpResponse.setStatusCode(404);
 		httpResponse.setStatus("Not Found");
 		httpResponse.addHeader("Content-Type", "text/html");
-		httpResponse.setResponse("<p><img src=\"https://lh3.googleusercontent.com/UKql4vznZC4VQGin34ZXxjQlPPT8P4s6VmgLN0c5cMmbxzP_gGWfVKTEWGeM59cIZaKU=s108\">Error 404 Given Resource Not found.</p>");
+		httpResponse.setResponse("<p><font size='10' color='red'>404</font> Given Resource Not found.</p>");
 		LOGGER.info("responding with headers " + httpResponse);
 		httpResponse.commit();
 	}

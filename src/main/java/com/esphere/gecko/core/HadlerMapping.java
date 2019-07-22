@@ -8,6 +8,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,14 +17,15 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.annotation.Endpoint;
 import com.esphere.gecko.entity.Resource;
 
 public class HadlerMapping {
-	
-	private static Logger logger = Logger.getLogger(HadlerMapping.class);
+
+	private static Logger logger = LoggerFactory.getLogger(HadlerMapping.class);
 
 	private static Map<String, Context> mappings = new ConcurrentHashMap<>();
 
@@ -31,6 +33,10 @@ public class HadlerMapping {
 
 	public HadlerMapping() {
 		try {
+			Context context = new Context();
+			Set<ResourceMeta> metas = new HashSet<>();
+			context.setMeta(metas);
+			mappings.put("gecko", context);
 			scanPackage();
 		} catch (IOException | URISyntaxException e) {
 			e.printStackTrace();
@@ -70,8 +76,7 @@ public class HadlerMapping {
 					ResourceMeta resourceMeta = new ResourceMeta();
 					resourceMeta.setEndpoint(endpoint);
 					resourceMeta.setClazz(clazz);
-
-					// mappings.put(endpoint.value(), clazz);
+					mappings.get("gecko").getMeta().add(resourceMeta);
 				} catch (ClassNotFoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -104,22 +109,18 @@ public class HadlerMapping {
 		return resourceMetas.size() > 0 ? resourceMetas.get(0) : null;
 
 	}
-	
+
 	public static ResourceMeta notFound(HttpRequest request) {
 		String endpoint = request.getEndpoint();
 		endpoint = endpoint.replaceFirst("/", "");
 		String context = endpoint.split("/")[0];
 		String path = "/404";
 
-		System.out.println("Endpoint " + request);
-		System.out.println("Context " + context);
-		System.out.println("Path " + path);
-
 		Context ctx = getContext(context);
 		Set<ResourceMeta> metas = ctx.getMeta();
 
 		metas.stream().forEach((ResourceMeta meta) -> {
-			System.out.println(meta);
+			logger.debug("{}", meta);
 		});
 
 		List<ResourceMeta> resourceMetas = metas.stream().filter(new Predicate<ResourceMeta>() {

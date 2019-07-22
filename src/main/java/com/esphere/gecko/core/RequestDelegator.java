@@ -6,13 +6,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.exception.MappingNotFoundException;
 
 public class RequestDelegator {
 
-	private static Logger LOGGER = Logger.getLogger(RequestDelegator.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(RequestDelegator.class);
 
 	private ExecutorService executorService;
 

@@ -1,23 +1,24 @@
 package com.esphere.gecko.resources;
 
-import org.apache.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.annotation.Endpoint;
 import com.esphere.gecko.core.HttpRequest;
 import com.esphere.gecko.core.HttpResponse;
 import com.esphere.gecko.entity.Resource;
 
-@Endpoint(value = "/jobs")
-public class JobResource implements Resource {
+@Endpoint(value = "/static")
+public class StaticResource implements Resource {
 
-	private static Logger LOGGER = Logger.getLogger(JobResource.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(StaticResource.class);
 
 	@Override
 	public void doServe(HttpRequest httpRequest, HttpResponse httpResponse) {
-		LOGGER.info("Invoking doExecute");
-
+		LOGGER.info("Invoking doServe");
 		try {
-			String path = "IndiGo.pdf";
+			String path = httpRequest.getParam("filepath");
 			LOGGER.info("responding with headers " + httpResponse);
 			httpResponse.ok().commitMedia(path);
 		} catch (Exception e) {

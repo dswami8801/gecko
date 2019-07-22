@@ -2,6 +2,7 @@ package com.esphere.gecko.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.FileVisitOption;
@@ -11,40 +12,49 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.annotation.Endpoint;
 import com.esphere.gecko.core.Context;
 import com.esphere.gecko.core.HadlerMapping;
 import com.esphere.gecko.core.ResourceMeta;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ContextLoader implements Loader {
 
-	private static final Logger logger = Logger.getLogger(ContextLoader.class);
+	private static final Logger logger = LoggerFactory.getLogger(ContextLoader.class);
 
-	private static String contextPath = System.getProperty("user.dir");
+	private String contextPath;
 
 	private final static String resource_path = "resources";
 
-	public static Path getResourcePath() {
-		Path path = Paths.get(contextPath);
-		return path.getParent().resolve(resource_path);
+	public ContextLoader(String workingDirectory) {
+		this.contextPath = workingDirectory;
 	}
 
-	public static void readContext() {
-		logger.info("Loading contexts from" + getResourcePath());
+	public Path getResourcePath() {
+		Path path = Paths.get(contextPath);
+		return path.resolve(resource_path);
+	}
+
+	public void readContext() {
+		logger.info("Loading contexts from location : {}", getResourcePath());
 		try {
 			Stream<Path> stream = Files.list(getResourcePath()).filter(new Predicate<Path>() {
 
 				@Override
 				public boolean test(Path arg0) {
-					return arg0.toFile().isFile();
+					return arg0.toFile().isDirectory();
 				}
 			});
 
@@ -124,14 +134,45 @@ public class ContextLoader implements Loader {
 	}
 
 	public static void readJarFile(String jarPath) throws IOException, ClassNotFoundException {
-
-		String contextPath = "gecko";
-		Path contextJson = Paths.get(jarPath).resolve(File.separator + "context.json");
+		Path contextJson = Paths.get(jarPath).resolve("context.json");
 		logger.info("Loading a new context from " + contextJson);
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode jsonNode = mapper.readTree(contextJson.toFile());
+
+		String contextPath = jsonNode.get("context").get("path").asText();
+
+		Stream<Path> stream = Files.list(Paths.get(jarPath)).filter(new Predicate<Path>() {
+
+			@Override
+			public boolean test(Path arg0) {
+				return arg0.toFile().getName().endsWith("jar");
+			}
+		});
+		List<Path> jars = stream.collect(Collectors.toList());
 		Set<ResourceMeta> metas = new HashSet<>();
+		jars.forEach(jar->{
+			try {
+				metas.addAll(loadClasses(jar.toString()));
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		Context context = new Context();
+		context.setPath(contextPath);
+		context.setMeta(metas);
+		HadlerMapping.addMapping(contextPath, context);
+	}
 
+	private static Set<ResourceMeta> loadClasses(String jarPath)
+			throws MalformedURLException, ClassNotFoundException, IOException {
+		
 		JarFile jarFile = new JarFile(new File(jarPath));
-
+		
+		Set<ResourceMeta> metas = new HashSet<>();
 		Enumeration<JarEntry> enumeration = jarFile.entries();
 
 		URL[] urls = { new URL("jar:file:" + jarPath + "!/") };
@@ -153,11 +194,7 @@ public class ContextLoader implements Loader {
 		}
 		jarFile.close();
 		classLoader.close();
-		Context context = new Context();
-		context.setPath(contextPath);
-		context.setMeta(metas);
-		System.out.println(metas);
-		HadlerMapping.addMapping(contextPath, context);
+		return metas;
 	}
 
 	public static String getFileType(String file) {
@@ -165,7 +202,6 @@ public class ContextLoader implements Loader {
 	}
 
 	public static String pathToPackage(String path) {
-		System.out.println(path);
 		return path;
 
 	}

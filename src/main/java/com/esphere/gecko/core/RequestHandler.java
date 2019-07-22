@@ -11,17 +11,17 @@ import java.net.Socket;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.esphere.gecko.api.ServerHandler;
 import com.esphere.gecko.entity.BeanNotValidException;
-import com.esphere.gecko.entity.Resource;
 import com.esphere.gecko.exception.MappingNotFoundException;
-import com.esphere.gecko.resources.NotFoundResource;
+import com.esphere.gecko.resources.ResourceNotFound;
 
 public class RequestHandler implements ServerHandler, Callable<Object> {
 
-	private static Logger LOGGER = Logger.getLogger(RequestHandler.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(RequestHandler.class);
 
 	private RequestBuilder requestBuilder = new RequestBuilder();
 
@@ -60,15 +60,16 @@ public class RequestHandler implements ServerHandler, Callable<Object> {
 			request.setInputStream(inputStream);
 			LOGGER.info("Request Built " + request);
 			HttpResponse response = (HttpResponse) responseBuilder.build(outputStream);
-			LOGGER.info("Loading Executor class");
+
 			try {
 				Class<?> clazz = null;
 				ResourceMeta meta = HadlerMapping.getEndpoint(request);
 				if (meta == null) {
 					LOGGER.info("No handler foung for given endpoint " + request.getEndpoint());
-					clazz = NotFoundResource.class;
+					clazz = ResourceNotFound.class;
 				} else {
 					clazz = meta.getClazz();
+					LOGGER.debug("Loading Executor class " + clazz);
 					response.addHeader("Content-Type", meta.getEndpoint().produces());
 				}
 				LOGGER.info("Loaded Executor class " + clazz);

@@ -120,12 +120,12 @@ public class HttpResponse implements Response {
 		isCommitted = true;
 	}
 
-	public void commitMedia(String path) throws IOException {
+	public void commitMedia(String filepath) throws IOException {
 
-		Path path2 = Paths.get(path);
-		File file = path2.toFile();
+		Path path = Paths.get(filepath);
+		File file = path.toFile();
 		this.addHeader("Content-Length ", Long.toString(file.length()));
-		this.addHeader("Content-Disposition", "attachment;filename="+path);
+		this.addHeader("Content-Disposition", "attachment;filename="+filepath);
 		this.addHeader("Accept-Ranges", "bytes");
 		this.setContentType("application/octet-stream");
 		outputStream.write((protocol + " " + statusCode + " " + status + CLRF).getBytes());
@@ -142,7 +142,7 @@ public class HttpResponse implements Response {
 			}
 		});
 		outputStream.write(CLRF.getBytes());
-		Files.copy(Paths.get(path), outputStream);
+		Files.copy(Paths.get(filepath), outputStream);
 		outputStream.flush();
 		outputStream.close();
 		isCommitted = true;
