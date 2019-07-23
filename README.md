@@ -1,5 +1,5 @@
 ## Welcome to Gecko!
-![enter image description here](https://i.etsystatic.com/9923148/r/il/b94aac/786624369/il_794xN.786624369_s718.jpg)
+![enter image description here](https://ik.imagekit.io/be4swnsmo/gecko_y30KjX2RB.jpg?tr=w-200,h-200,c-at_max,oit-false,q-80)
 ### What Is It?
 #### A web Server
 Geko is an implementation of servlet like API Specification where we can Implement @Resource Types , Annotate them with endpoint URL's , bundle them in jar and put under the servers working directory.
