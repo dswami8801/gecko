@@ -2,7 +2,7 @@
 ![enter image description here](https://i.etsystatic.com/9923148/r/il/b94aac/786624369/il_794xN.786624369_s718.jpg)
 ### What Is It?
 #### A web Server
-Geko is an implementation of servel like API Specification where we can Implement @Resource Types , Annotate them with endpoint URL's , bundle them in jar and put under the servers working directory.
+Geko is an implementation of servlet like API Specification where we can Implement @Resource Types , Annotate them with endpoint URL's , bundle them in jar and put under the servers working directory.
 Geko will scan the jars and prepare a mapping of endpoint of Resources , @Resources are the place where we put the logic to execute by the gecko server. 
 
 We can annotate the class with @Endpoint to map it with a URL like 
